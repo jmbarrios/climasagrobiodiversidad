@@ -9,6 +9,7 @@ import urllib3
 urllib3.disable_warnings()
 import base64
 import time
+import io
 import plotly.express as px
 import flask
 from plotly.colors import n_colors
@@ -46,9 +47,9 @@ def run_query(uri, query, statusCode):
 
 result = run_query(url, my_query, statusCode)
 
-taxons = []
-for i in range (len(result['data']['taxons'])):
-    taxons.append(result['data']['taxons'][i])
+taxons = [taxon for taxon in result['data']['taxons']]
+# for i in range (len(result['data']['taxons'])):
+#     taxons.append(result['data']['taxons'][i])
 
 df_taxons=pd.DataFrame.from_dict(taxons)
 complete_csv = pd.read_csv('./assets/data/occurrence.csv')
@@ -132,7 +133,7 @@ def make_layout ():
     children=html.Div(id='loading-output-2',style={'background-color':'#2A3C24','padding':'30px', 'color': 'rgb(42, 60, 36)'}), 
     fullscreen= True)
     
-],style={'background-image':'url("/assets/focales.jpg")','width':'102%','height':'100%','background-attachment': 'fixed','margin-top':'5px','margin-left':'-10px','margin-bottom':'-10px', 'padding-top':'50px'})
+],style={'background-image':'url("/assets/images/focales.jpg")','width':'102%','height':'100%','background-attachment': 'fixed','margin-top':'5px','margin-left':'-10px','margin-bottom':'-10px', 'padding-top':'50px'})
 
 app = Dash(server=server,external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.title = 'Mapa SIAgro' 
@@ -410,7 +411,7 @@ def update_output(n_clicks,n_clicks2,value,pathname):
     prevent_initial_call=True,
 )
 def func(data,n_clicks,n_clicks2,value):
-    dff = pd.read_json(data, orient='split')
+    dff = pd.read_json(io.StringIO(data), orient='split')
 
     if "btn_csv" == ctx.triggered_id or "btn_csv_down" == ctx.triggered_id:
         dff['raza']=value
