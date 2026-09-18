@@ -51,7 +51,7 @@ for i in range (len(result['data']['taxons'])):
     taxons.append(result['data']['taxons'][i])
 
 df_taxons=pd.DataFrame.from_dict(taxons)
-complete_csv = pd.read_csv('/var/www/FlaskApp/FlaskApp/occurrence.csv')
+complete_csv = pd.read_csv('./assets/data/occurrence.csv')
 # Se eliminan taxones repetidos
 df_taxons = df_taxons.drop(df_taxons['taxon'].loc[df_taxons['taxon']=='Zea mays'].index)
 df_taxons = df_taxons.drop(df_taxons['taxon'].loc[df_taxons['taxon']=='Zea mays subsp. mays'].index)
@@ -153,7 +153,6 @@ def update_url_on_dropdown_change(dropdown_value,pathname):
     return url_taxon
 
 @app.callback(Output('intermediate-value', 'data'),Output("divButton", "style"),Output("divDown", "style"),Output('pandas-dropdown-2', 'value'),Output("loading-output-1", "children"),Output("pandas-output-container-2","children"), [Input("btn_csv", "n_clicks"),Input("btn_csv_down", "n_clicks"),Input("pandas-dropdown-2", "value"),Input('url', 'pathname')],prevent_initial_call=True,)
-
 #Función para el texto y la tabla 
 def update_output(n_clicks,n_clicks2,value,pathname):
     if (value is not None) or (value is None and pathname!=""):
@@ -431,20 +430,18 @@ def func(data,n_clicks,n_clicks2,value):
     Input(component_id='radio-conditions', component_property='value'),
     Input('url', 'pathname')]
 )
-
-
 #Función para el mapa 
 def update_map(column_chosen, condition_chosen, pathname):
     if condition_chosen == 'altitud':
-        image = '/var/www/FlaskApp/FlaskApp/altitud.png'
+        image = './assets/images/altitud.png'
         color_scale = 'turbid'
         x_max = 3400
     elif condition_chosen == 'temperatura':
-        image = '/var/www/FlaskApp/FlaskApp/temperatura.png'
+        image = './assets/images/temperatura.png'
         color_scale = 'balance'
         x_max = 40
     elif condition_chosen == 'precipitacion':
-        image = '/var/www/FlaskApp/FlaskApp/precipitacion.png'
+        image = './assets/images/precipitacion.png'
         color_scale = 'YlGnBu'
         x_max = 1500
     x_min= 0
@@ -453,9 +450,10 @@ def update_map(column_chosen, condition_chosen, pathname):
     if column_chosen is None:
         #print("entro a is none")
         complete_dict={"lat": "0","lon": "0"}
-        fig1 = px.scatter_mapbox(lat=['21.826080'],lon=['-101.460875'],zoom=4, height=500,color_discrete_sequence=['black'])
+        # fig1 = px.scatter_map(lat=['21.826080'],lon=['-101.460875'],zoom=4, height=500,color_discrete_sequence=['black'])
+        fig1 = px.scatter_map(center={'lat': 21.826080, 'lon': -101.460875},zoom=3, height=500,color_discrete_sequence=['black'], map_style="carto-darkmatter")
         
-        fig1.update_layout(mapbox_style="carto-darkmatter")#stamen-terrain, carto-positron, open-street-map, carto-darkmatter
+        # fig1.update_layout(mapbox_style="carto-darkmatter")#stamen-terrain, carto-positron, open-street-map, carto-darkmatter
         fig1.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
         fig1.update_layout(height= 300)
         fig1.update_coloraxes(showscale=False)
@@ -487,16 +485,16 @@ def update_map(column_chosen, condition_chosen, pathname):
         else:
             taxon_id=pathname.replace("/id=","")
         
-        complete_csv = pd.read_csv('/var/www/FlaskApp/FlaskApp/occurrence.csv')
+        complete_csv = pd.read_csv('./assets/data/occurrence.csv')
         taxon_id=taxon_id.replace("/id=","")
         taxon_id=taxon_id.replace("id=","")
         df_taxon=complete_csv.loc[complete_csv['taxon_id'] == taxon_id]
         df=df_taxon.filter(items=['taxon','latitud', 'longitud', 'altitud', 'estado', 'municipio', 'localidad', 'temperatura', 'precipitacion'])
         df['temperatura']= df['temperatura'].round()
         df['precipitacion']= df['precipitacion'].round()
-        fig1 = px.scatter_mapbox(df, lat="latitud", lon="longitud", hover_data={'latitud':False, 'longitud':False, 'estado':True, 'municipio':True}, color = condition_chosen,
-                                color_continuous_scale=color_scale, zoom=4, height=500, range_color = (x_min, x_max))
-        fig1.update_layout(mapbox_style="carto-darkmatter")#stamen-terrain, carto-positron, open-street-map, carto-darkmatter
+        fig1 = px.scatter_map(df, lat="latitud", lon="longitud", hover_data={'latitud':False, 'longitud':False, 'estado':True, 'municipio':True}, color = condition_chosen,
+                                color_continuous_scale=color_scale, zoom=3, height=500, range_color = (x_min, x_max),center={'lat': 21.826080, 'lon': -101.460875}, map_style="carto-darkmatter")
+        # fig1.update_layout(mapbox_style="carto-darkmatter")#stamen-terrain, carto-positron, open-street-map, carto-darkmatter
         fig1.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
         fig1.update_layout(height= 300)
         fig1.update_coloraxes(showscale=False)
