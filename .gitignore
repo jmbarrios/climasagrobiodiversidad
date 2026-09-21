@@ -1,2 +1,4 @@
-*.pyc
+*.py[cod]
 __pychache__/
+.venv
+*.tgz
