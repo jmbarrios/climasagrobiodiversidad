@@ -1,41 +1,41 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
-  <link rel="icon" href="images/favicon.ico">
+  <link rel="icon" href="./images/favicon.ico">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="js/querys.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
   <!-- <link rel="stylesheet" href="fonts/icomoon/style.css"> -->
-   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/icomoon@1.0.0/style.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/icomoon@1.0.0/style.min.css">
   <!-- <link rel="stylesheet" href="css/owl.carousel.min.css"> -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/owl.carousel@2.3.4/dist/assets/owl.carousel.min.css">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="./css/style.css">
   <script src="https://kit.fontawesome.com/eeeca6597b.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script type="text/javascript" src="https://code.jquery.com/jquery-1.7.1.min.js"></script>
   <script type="text/javascript" language="JavaScript">
 
-      $(document).ready(() => {
+    $(document).ready(() => {
       let url = location.href.replace(/\/$/, "");
-    
+
       if (location.hash) {
         const hash = url.split("#");
-        $('#myTab a[href="#'+hash[1]+'"]').tab("show");
+        $('#myTab a[href="#' + hash[1] + '"]').tab("show");
         url = location.href.replace(/\/#/, "#");
         history.replaceState(null, null, url);
         setTimeout(() => {
           $(window).scrollTop(0);
         }, 400);
-      } 
-      
-      $('a[data-toggle="tab"]').on("click", function() {
+      }
+
+      $('a[data-toggle="tab"]').on("click", function () {
         let newUrl;
         const hash = $(this).attr("href");
-        if(hash == "#home") {
+        if (hash == "#home") {
           newUrl = url.split("#")[0];
         } else {
           newUrl = url.split("#")[0] + hash;
@@ -45,291 +45,345 @@
       });
     });
 
-    $(document).ready(function(){ irArriba(); }); //Hacia arriba
+    $(document).ready(function () { irArriba(); }); //Hacia arriba
 
-function irArriba(){
-  $('.ir-arriba').click(function(){ $('body,html').animate({ scrollTop:'0px' },200); });
-  $(window).scroll(function(){
-    if($(this).scrollTop() > 0){ $('.ir-arriba').slideDown(400); }else{ $('.ir-arriba').slideUp(400); }
-  });
-  $('.ir-abajo').click(function(){ $('body,html').animate({ scrollTop:'1000px' },200); });
-}
+    function irArriba() {
+      $('.ir-arriba').click(function () { $('body,html').animate({ scrollTop: '0px' }, 200); });
+      $(window).scroll(function () {
+        if ($(this).scrollTop() > 0) { $('.ir-arriba').slideDown(400); } else { $('.ir-arriba').slideUp(400); }
+      });
+      $('.ir-abajo').click(function () { $('body,html').animate({ scrollTop: '1000px' }, 200); });
+    }
   </script>
 
 
-<title>Mapa SIAgro</title>
+  <title>Mapa SIAgro</title>
 
 
 </head>
 
-<body >
-<a class="ir-arriba"  javascript:void(0) title="Volver arriba">
-  <span class="fa-stack">
-    <i class="fa fa-circle fa-stack-2x"></i>
-    <i class="fa fa-arrow-up fa-stack-1x fa-inverse"></i>
-  </span>
-</a>
+<body>
+  <a class="ir-arriba" javascript:void(0) title="Volver arriba">
+    <span class="fa-stack">
+      <i class="fa fa-circle fa-stack-2x"></i>
+      <i class="fa fa-arrow-up fa-stack-1x fa-inverse"></i>
+    </span>
+  </a>
   <div>
 
     <nav class="navbar navbar-dark bg-dark navbar-expand-xl fixed-top" style="z-index:15000;">
-  <!--<span class="navbar-brand mb-0 h1"><a href="https://www.gob.mx/conabio" target="_blank"><img src="images/conabio2.png" alt="Conabio" width="170" ></a></span>-->
-<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <!--<span class="navbar-brand mb-0 h1"><a href="https://www.gob.mx/conabio" target="_blank"><img src="images/conabio2.png" alt="Conabio" width="170" ></a></span>-->
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
-        </button>
-<div class="collapse navbar-collapse" id="navbarSupportedContent">
-  <ul class="navbar-nav nav nav-pills" id="myTab">
-   <li style="width: 20px;">&nbsp;</li>
-   <li class="nav-item active">
-      <a class="nav-link active" id="tab-0" data-toggle="tab" role="tab" href="#home" aria-selected="true" aria-controls="home" >Home </a>     
-   </li>
-   <li class="nav-item">
-    <a class="nav-link" href="./dashboard/" >Mapa</a>
- </li>
- <li class="nav-item">
-      <a class="nav-link" id="tab-7" data-toggle="tab" role="tab" href="#ayuda" aria-selected="false" aria-controls="ayuda">Ayuda</a>
-   </li>
-  <li class="nav-item">
-      <a class="nav-link" id="tab-6" data-toggle="tab" role="tab" href="#creditos" aria-selected="false" aria-controls="creditos">Créditos</a>
-   </li>
-  
-   
-  </ul>
-
-</nav>
-<main role="main" class="container-full" style="margin-bottom:50px">
-  <div class="container-full ">
-    <div class="tab-content">
-    <div class="tab-pane fade show active" id="home" aria-labelledby="tab-0" role="tabpanel">
-      <div class="row" style="width: 100%; margin: auto; margin-top: 50px; ">
-      <div style="width:100%; background-color: white;">
-      <div class="textoHome" style="width:80%; margin-top: 80px;">
-      Aquí puedes explorar cuáles son las condiciones de temperatura y lluvia de los sitios donde se siembran cultivos de #RaícesMexicanas, y de donde crecen sus parientes silvestres.
-También podrás conocer qué cultivos y condiciones climáticas existen en una localidad de tu interés.<br><br>
-Explora por cultivos:
-      </div>
-      </div>
-
-      <div class="accordion accordion-flush " id="accordionFlushExample" style="margin-top: 20px;">
-  <div class="accordion-item " style="background-color: transparent !important;">
-    <h2 class="accordion-header " id="flush-headingOne">
-      <button class="accordion-button collapsed bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
-        Maíces
       </button>
-    </h2>
-    <div id="flush-collapseOne" class="accordion-collapse collapse "  aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
-      <div class="row" style="width: 98%; margin-left:1%;">
-      <div class="textoHome" style="width: 98%; margin-left:1%; margin-top:10px; margin-bottom:10px;">Selecciona una de las siguientes razas de maíz para explorar su distribución y condiciones climáticas. Si quieres saber más de las características de cada raza, visita la <a href="https://www.biodiversidad.gob.mx/diversidad/alimentos/maices/razas-de-maiz" target="_blank">página de Razas de Maíz de México</a>.</div>
-      <div id="maices-list" class="row" aria-live="polite"></div>
-      </div>
-    </div>
-  </div>
-  <div class="accordion-item " style="background-color: transparent !important;">
-    <h2 class="accordion-header " id="flush-headingOne">
-      <button class="accordion-button collapsed bg-dark text-white" style="border-radius: 20;" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
-        Teocintles (parientes silvestres de maíces)
-      </button>
-    </h2>
-    <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
-    <div class="row" style="width: 98%; margin-left:1%;">
-    <div class="textoHome" style="width: 98%; margin-left:1%; margin-top:10px; margin-bottom:10px;">Selecciona uno de los siguientes teocintles para explorar su distribución y condiciones climáticas. Si quieres saber más de cada uno, visita la <a href="https://www.biodiversidad.gob.mx/diversidad/alimentos/maices/teocintles" target="_blank">página de teocintles</a>. </div>
-      <div id="teocintles-list" class="row" aria-live="polite"></div>
-      </div>
-    </div>
-  </div>
-  
-</div>
-        
-   
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav nav nav-pills" id="myTab">
+          <li style="width: 20px;">&nbsp;</li>
+          <li class="nav-item active">
+            <a class="nav-link active" id="tab-0" data-toggle="tab" role="tab" href="#home" aria-selected="true"
+              aria-controls="home">Home </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="./dashboard/">Mapa</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="tab-7" data-toggle="tab" role="tab" href="#ayuda" aria-selected="false"
+              aria-controls="ayuda">Ayuda</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="tab-6" data-toggle="tab" role="tab" href="#creditos" aria-selected="false"
+              aria-controls="creditos">Créditos</a>
+          </li>
+
+
+        </ul>
+
+    </nav>
+    <main role="main" class="container-full" style="margin-bottom:50px">
+      <div class="container-full ">
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="home" aria-labelledby="tab-0" role="tabpanel">
+            <div class="row" style="width: 100%; margin: auto; margin-top: 50px; ">
+              <div style="width:100%; background-color: white;">
+                <div class="textoHome" style="width:80%; margin-top: 80px;">
+                  Aquí puedes explorar cuáles son las condiciones de temperatura y lluvia de los sitios donde se
+                  siembran cultivos de #RaícesMexicanas, y de donde crecen sus parientes silvestres.
+                  También podrás conocer qué cultivos y condiciones climáticas existen en una localidad de tu
+                  interés.<br><br>
+                  Explora por cultivos:
+                </div>
+              </div>
+
+              <div class="accordion accordion-flush " id="accordionFlushExample" style="margin-top: 20px;">
+                <div class="accordion-item " style="background-color: transparent !important;">
+                  <h2 class="accordion-header " id="flush-headingOne">
+                    <button class="accordion-button collapsed bg-dark text-white" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false"
+                      aria-controls="flush-collapseOne">
+                      Maíces
+                    </button>
+                  </h2>
+                  <div id="flush-collapseOne" class="accordion-collapse collapse " aria-labelledby="flush-headingOne"
+                    data-bs-parent="#accordionFlushExample">
+                    <div class="row" style="width: 98%; margin-left:1%;">
+                      <div class="textoHome" style="width: 98%; margin-left:1%; margin-top:10px; margin-bottom:10px;">
+                        Selecciona una de las siguientes razas de maíz para explorar su distribución y condiciones
+                        climáticas. Si quieres saber más de las características de cada raza, visita la <a
+                          href="https://www.biodiversidad.gob.mx/diversidad/alimentos/maices/razas-de-maiz"
+                          target="_blank">página de Razas de Maíz de México</a>.</div>
+                      <div id="maices-list" class="row" aria-live="polite"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item " style="background-color: transparent !important;">
+                  <h2 class="accordion-header " id="flush-headingOne">
+                    <button class="accordion-button collapsed bg-dark text-white" style="border-radius: 20;"
+                      type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false"
+                      aria-controls="flush-collapseTwo">
+                      Teocintles (parientes silvestres de maíces)
+                    </button>
+                  </h2>
+                  <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo"
+                    data-bs-parent="#accordionFlushExample">
+                    <div class="row" style="width: 98%; margin-left:1%;">
+                      <div class="textoHome" style="width: 98%; margin-left:1%; margin-top:10px; margin-bottom:10px;">
+                        Selecciona uno de los siguientes teocintles para explorar su distribución y condiciones
+                        climáticas. Si quieres saber más de cada uno, visita la <a
+                          href="https://www.biodiversidad.gob.mx/diversidad/alimentos/maices/teocintles"
+                          target="_blank">página de teocintles</a>. </div>
+                      <div id="teocintles-list" class="row" aria-live="polite"></div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+
+            </div>
           </div>
-    </div>
-    
-    <div class="tab-pane fade" id="creditos" aria-labelledby="tab-6" role="tabpanel">
-      <div class="row" style="width: 90%; margin: auto; margin-top: 80px; ">
-        <div class="col-md-12 p-4 mt-3" >
-          <div class="baseGrid">
-            <h5>Esta aplicación fue realizada gracias a la colaboración entre el <a href="https://www.biodiversidad.gob.mx/diversidad/proyectos/agrobiodiversidadmx" target="_blank">Proyecto 9380-Agrobiodiversidad Mexicana</a> y el Instituto Tecnológico Autónomo de México a través de la estancia de investigación de la Maestría en Ciencia de Datos, así como de un grupo de personas expertas en maíz y agricultura campesina.</h5>
-            <div class="row p-4" style="margin-top: 20px;">
-            <ul>
-              <li>Programación</li>
-              <ul>
-              <li>Juan Humberto Escalona Santiago (ITAM)</li>
-              <li>Mónica Altagracia García López (ITAM)</li>
-              <li>Juan M. Barrios (CONABIO-Dirección de Ciencia de Datos sobre Biodiversidad)</li>
-              <li>Vivian Bass Vega (CONABIO-Proyecto Agrobiodiversidad Mexicana)</li>
-              </ul>
-              <br>
-              <li>Retroalimentación</li>
-              <ul>
-              <li>Flavio Aragón (INIFAP Oaxaca)</li>
-              <li>Mauricio Bellon (Arizona State University)</li>
-              <li>Liza Covantes (CONABIO-Proyecto Agrobiodiversidad Mexicana)</li>
-              <li>Angela Cuervo Robayo (CONABIO)</li>
-              <li>Oswaldo Oliveros (CONABIO)</li>
-              <li>María Andrea Orjuela (CONABIO)</li>
-              <li>Quetzalcoatl Orozco (UNAM, Instituto de Geografía)</li>
-              <li>Hugo Perales (Ecosur Chiapas)</li>
-              <li>Alejandro Ponce Mendoza (CONABIO-Proyecto Agrobiodiversidad Mexicana)</li>
-              <li>Irene Ramos Pérez (CONABIO-Proyecto Agrobiodiversidad Mexicana)</li>
-              <li>Ana Wegier (UNAM, Instituto de Biología)</li>
-              </ul>
-              <br>
-              <li>Coordinación</li>
-              <ul>
-              <li>Alicia Mastretta-Yanes (CONACYT-CONABIO)</li>
-              </ul>
-              </li>
-            </ul>
-              
+
+          <div class="tab-pane fade" id="creditos" aria-labelledby="tab-6" role="tabpanel">
+            <div class="row" style="width: 90%; margin: auto; margin-top: 80px; ">
+              <div class="col-md-12 p-4 mt-3">
+                <div class="baseGrid">
+                  <h5>Esta aplicación fue realizada gracias a la colaboración entre el <a
+                      href="https://www.biodiversidad.gob.mx/diversidad/proyectos/agrobiodiversidadmx"
+                      target="_blank">Proyecto 9380-Agrobiodiversidad Mexicana</a> y el Instituto Tecnológico Autónomo
+                    de México a través de la estancia de investigación de la Maestría en Ciencia de Datos, así como de
+                    un grupo de personas expertas en maíz y agricultura campesina.</h5>
+                  <div class="row p-4" style="margin-top: 20px;">
+                    <ul>
+                      <li>Programación</li>
+                      <ul>
+                        <li>Juan Humberto Escalona Santiago (ITAM)</li>
+                        <li>Mónica Altagracia García López (ITAM)</li>
+                        <li>Juan M. Barrios (CONABIO-Dirección de Ciencia de Datos sobre Biodiversidad)</li>
+                        <li>Vivian Bass Vega (CONABIO-Proyecto Agrobiodiversidad Mexicana)</li>
+                      </ul>
+                      <br>
+                      <li>Retroalimentación</li>
+                      <ul>
+                        <li>Flavio Aragón (INIFAP Oaxaca)</li>
+                        <li>Mauricio Bellon (Arizona State University)</li>
+                        <li>Liza Covantes (CONABIO-Proyecto Agrobiodiversidad Mexicana)</li>
+                        <li>Angela Cuervo Robayo (CONABIO)</li>
+                        <li>Oswaldo Oliveros (CONABIO)</li>
+                        <li>María Andrea Orjuela (CONABIO)</li>
+                        <li>Quetzalcoatl Orozco (UNAM, Instituto de Geografía)</li>
+                        <li>Hugo Perales (Ecosur Chiapas)</li>
+                        <li>Alejandro Ponce Mendoza (CONABIO-Proyecto Agrobiodiversidad Mexicana)</li>
+                        <li>Irene Ramos Pérez (CONABIO-Proyecto Agrobiodiversidad Mexicana)</li>
+                        <li>Ana Wegier (UNAM, Instituto de Biología)</li>
+                      </ul>
+                      <br>
+                      <li>Coordinación</li>
+                      <ul>
+                        <li>Alicia Mastretta-Yanes (CONACYT-CONABIO)</li>
+                      </ul>
+                      </li>
+                    </ul>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+            <footer
+              style="position: absolute;  margin-bottom: 0;  width: 100%; display: flex; align-items: center; justify-content: center; ">
+              <div class="col-lg-3 col-md-6 col-sm-12 p-3 m-2"
+                style="display: flex; align-items: center; justify-content: center;"><img src="images/bannerSiagro.png"
+                  height="100px" /></div>
+            </footer>
+          </div>
+          <div class="tab-pane fade" id="ayuda" aria-labelledby="tab-7" role="tabpanel">
+
+            <div class="row" style=" width: 90%; margin: auto; margin-top: 130px;">
+              <div class="col-md-12 p-3 mt-3">
+                <div class="baseGrid">
+                  <!--<div style="color:#fd7e14";></div><br><h3>¿Cómo funciona el sitio?</h3><br>En el siguiente video podrás conocer cómo utilizar este sitio web <br><br>
+              <p align="center"><iframe width="90%" height="500" src="https://www.youtube.com/embed/YBjRoxxXl2Q?autoplay=1&mute=1"></iframe></p>-->
+                  <div style="color:#fd7e14" ;></div><br>
+                  <h4>¿De dónde sale la información?</h4><br>Los datos de los maíces que se presentan aquí provienen del
+                  <a href="https://biodiversidad.gob.mx/diversidad/proyectoMaices">Proyecto Global de Maíces Nativos</a>
+                  y forman parte del <a href="https://siagro.conabio.gob.mx/">Sistema de Información de
+                    Agrobiodiversidad</a> de la CONABIO.
+                  <br><br>
+                  Los datos provienen de:
+                  <br><br>
+                  <h5>Precipitación anual periodo 2000:</h5>
+                  Valor extraído de la celda donde cae el punto del sitio en los rasters de Cuervo-Robayo A.P., C.
+                  Ureta, M.A. Gómez-Albores, A.K. Meneses-Mosquera, O. Téllez-Valdés, E. Martínez-Meyer, (27/08/2019).
+                  'Bioclimas, periodo: 2000 (1980-2009)', edición: 1. Instituto de Biología, Universidad Nacional
+                  Autónoma de México. Estos mapas forman parte de la publicación: Cuervo-Robayo, A. P., Ureta, C.,
+                  Gómez-Albores, M. A., Meneses-Mosquera, A. K., Téllez-Valdés, O., y E. Martínez-Meyer. (2020). One
+                  hundred years of climate change in Mexico. Plos One. https://doi.org/10.1371/ journal.pone.0209808
+                  Ciudad de México, México.<br><br>
+                  <h5>Temperatura media anual periodo 2000:</h5>
+                  Valor extraído de la celda donde cae el punto del sitio en los rasters de Cuervo-Robayo A.P., C.
+                  Ureta, M.A. Gómez-Albores, A.K. Meneses-Mosquera, O. Téllez-Valdés, E. Martínez-Meyer, (27/08/2019).
+                  'Bioclimas, periodo: 2000 (1980-2009)', edición: 1. Instituto de Biología, Universidad Nacional
+                  Autónoma de México. Estos mapas forman parte de la publicación: Cuervo-Robayo, A. P., Ureta, C.,
+                  Gómez-Albores, M. A., Meneses-Mosquera, A. K., Téllez-Valdés, O., y E. Martínez-Meyer. (2020). One
+                  hundred years of climate change in Mexico. Plos One. https://doi.org/10.1371/ journal.pone.0209808
+                  Ciudad de México, México.
+                  <br><br>
+                  <h5>Altitud tomada en el sitio al momento de la colecta (y revisada por CONABIO).</h5>
+                  Los nombres de las categorías de altitud, temperatura y precipitación en los resúmenes de texto se
+                  ajustan a los siguientes rangos, a partir del valor de la <b>media</b> de todos los datos.
+
+                  <br><br>
+                  <h5>Escala altitud</h5>
+                  <table class="table table-hover table-striped border"
+                    style="background-color: rgba(255,255,255,0.7);">
+                    <thead>
+                      <tr>
+                        <th scope="col">Categoría</th>
+                        <th scope="col">Rango</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Bajas</td>
+                        <td>
+                          <1200< /td>
+                      </tr>
+                      <tr>
+                        <td>De mediana altitud</td>
+                        <td>1200 – 1800</td>
+                      </tr>
+                      <tr>
+                        <td>Altas</td>
+                        <td>>1800</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+
+                  <br><br>
+                  <h5>Escala temperatura</h5>
+                  <table class="table table-hover table-striped border"
+                    style="background-color: rgba(255,255,255,0.7);">
+                    <thead>
+                      <tr>
+                        <th scope="col">Categoría</th>
+                        <th scope="col">Rango</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Fría</td>
+                        <td>
+                          <18< /td>
+                      </tr>
+                      <tr>
+                        <td>Templada</td>
+                        <td>18 - 21</td>
+                      </tr>
+                      <tr>
+                        <td>Semi-caliente</td>
+                        <td>>21 - 25</td>
+                      </tr>
+                      <tr>
+                        <td>Caliente</td>
+                        <td>>25 - 27</td>
+                      </tr>
+                      <tr>
+                        <td>Muy caliente</td>
+                        <td>> 27</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+
+                  <br><br>
+                  <h5>Escala precipitación</h5>
+                  <table class="table table-hover table-striped border"
+                    style="background-color: rgba(255,255,255,0.7);">
+                    <thead>
+                      <tr>
+                        <th scope="col">Categoría</th>
+                        <th scope="col">Rango</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Escasas</td>
+                        <td>
+                          <450< /td>
+                      </tr>
+                      <tr>
+                        <td>Poco abundantes</td>
+                        <td>>450 - 650</td>
+                      </tr>
+                      <tr>
+                        <td>Intermedias</td>
+                        <td>>650 - 850</td>
+                      </tr>
+                      <tr>
+                        <td>Abundantes</td>
+                        <td>>850 - 1,360</td>
+                      </tr>
+                      <tr>
+                        <td>Muy abundantes</td>
+                        <td>>1,360</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+
+                  <br>
+                  y se realizaron tomando como base los rangos descritos en: Ruiz Corral, J.A., Durán Puga, N., Sánchez
+                  González, J.d.J., Ron Parra, J., González Eguiarte, D.R., Holland, J. and Medina García, G. (2008),
+                  Climatic Adaptation and Ecological Descriptors of 42 Mexican Maize Races . Crop Science, 48:
+                  1502-1512. https://doi.org/10.2135/ cropsci2007.09.0518
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>  
-      <footer style="position: absolute;  margin-bottom: 0;  width: 100%; display: flex; align-items: center; justify-content: center; "><div class="col-lg-3 col-md-6 col-sm-12 p-3 m-2" style="display: flex; align-items: center; justify-content: center;"><img src="images/bannerSiagro.png" height="100px"/></div></footer>
-    </div>
-      <div class="tab-pane fade" id="ayuda" aria-labelledby="tab-7" role="tabpanel">
-        
-        <div class="row" style=" width: 90%; margin: auto; margin-top: 130px;">
-          <div class="col-md-12 p-3 mt-3" >
-            <div class="baseGrid">
-              <!--<div style="color:#fd7e14";></div><br><h3>¿Cómo funciona el sitio?</h3><br>En el siguiente video podrás conocer cómo utilizar este sitio web <br><br>
-              <p align="center"><iframe width="90%" height="500" src="https://www.youtube.com/embed/YBjRoxxXl2Q?autoplay=1&mute=1"></iframe></p>-->
-              <div style="color:#fd7e14";></div><br><h4>¿De dónde sale la información?</h4><br>Los datos de los maíces que se presentan aquí provienen del <a href="https://biodiversidad.gob.mx/diversidad/proyectoMaices">Proyecto Global de Maíces Nativos</a> y forman parte del <a href="https://siagro.conabio.gob.mx/">Sistema de Información de Agrobiodiversidad</a> de la CONABIO.
-                <br><br>
-                Los datos provienen de:
-                <br><br>
-                <h5>Precipitación anual periodo 2000:</h5>
-                Valor extraído de la celda donde cae el punto del sitio en los rasters de Cuervo-Robayo A.P., C. Ureta, M.A. Gómez-Albores, A.K. Meneses-Mosquera, O. Téllez-Valdés, E. Martínez-Meyer, (27/08/2019). 'Bioclimas, periodo: 2000 (1980-2009)', edición: 1. Instituto de Biología, Universidad Nacional Autónoma de México. Estos mapas forman parte de la publicación: Cuervo-Robayo, A. P., Ureta, C., Gómez-Albores, M. A., Meneses-Mosquera, A. K., Téllez-Valdés, O., y E. Martínez-Meyer. (2020). One hundred years of climate change in Mexico. Plos One. https://doi.org/10.1371/ journal.pone.0209808 Ciudad de México, México.<br><br>
-                <h5>Temperatura media anual periodo 2000:</h5>
-                Valor extraído de la celda donde cae el punto del sitio en los rasters de Cuervo-Robayo A.P., C. Ureta, M.A. Gómez-Albores, A.K. Meneses-Mosquera, O. Téllez-Valdés, E. Martínez-Meyer, (27/08/2019). 'Bioclimas, periodo: 2000 (1980-2009)', edición: 1. Instituto de Biología, Universidad Nacional Autónoma de México. Estos mapas forman parte de la publicación: Cuervo-Robayo, A. P., Ureta, C., Gómez-Albores, M. A., Meneses-Mosquera, A. K., Téllez-Valdés, O., y E. Martínez-Meyer. (2020). One hundred years of climate change in Mexico. Plos One. https://doi.org/10.1371/ journal.pone.0209808 Ciudad de México, México.
-                <br><br>
-                <h5>Altitud tomada en el sitio al momento de la colecta (y revisada por CONABIO).</h5>
-                Los nombres de las categorías de altitud, temperatura y precipitación en los resúmenes de texto se ajustan a los siguientes rangos, a partir del valor de la <b>media</b> de todos los datos.
-
-                <br><br>
-              <h5>Escala altitud</h5>
-              <table class="table table-hover table-striped border" style="background-color: rgba(255,255,255,0.7);">
-                <thead >
-                  <tr>
-                    <th scope="col">Categoría</th>
-                    <th scope="col">Rango</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Bajas</td>
-                    <td><1200</td>
-                  </tr>
-                  <tr>
-                    <td>De mediana altitud</td>
-                    <td>1200 – 1800</td>
-                  </tr>
-                  <tr>
-                    <td>Altas</td>
-                    <td>>1800</td>
-                  </tr>
-                </tbody>
-              </table>
 
 
-              <br><br>
-              <h5>Escala temperatura</h5>
-              <table class="table table-hover table-striped border" style="background-color: rgba(255,255,255,0.7);">
-                <thead >
-                  <tr>
-                    <th scope="col">Categoría</th>
-                    <th scope="col">Rango</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Fría</td>
-                    <td><18</td>
-                  </tr>
-                  <tr>
-                    <td>Templada</td>
-                    <td>18 - 21</td>
-                  </tr>
-                  <tr>
-                    <td >Semi-caliente</td>
-                    <td>>21 - 25</td>
-                  </tr>
-                  <tr>
-                    <td >Caliente</td>
-                    <td>>25 - 27</td>
-                  </tr>
-                  <tr>
-                    <td >Muy caliente</td>
-                    <td>> 27</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              
-              <br><br>
-              <h5>Escala precipitación</h5>
-              <table class="table table-hover table-striped border" style="background-color: rgba(255,255,255,0.7);">
-                <thead >
-                  <tr>
-                    <th scope="col">Categoría</th>
-                    <th scope="col">Rango</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Escasas</td>
-                    <td><450</td>
-                  </tr>
-                  <tr>
-                    <td>Poco abundantes</td>
-                    <td>>450 - 650</td>
-                  </tr>
-                  <tr>
-                    <td >Intermedias</td>
-                    <td>>650 - 850</td>
-                  </tr>
-                  <tr>
-                    <td >Abundantes</td>
-                    <td>>850 - 1,360</td>
-                  </tr>
-                  <tr>
-                    <td >Muy abundantes</td>
-                    <td>>1,360</td>
-                  </tr>
-                </tbody>
-              </table>
-
-             
-              <br>
-              y se realizaron tomando como base los rangos descritos en: Ruiz Corral, J.A., Durán Puga, N., Sánchez González, J.d.J., Ron Parra, J., González Eguiarte, D.R., Holland, J. and Medina García, G. (2008), Climatic Adaptation and Ecological Descriptors of 42 Mexican Maize Races . Crop Science, 48: 1502-1512. https://doi.org/10.2135/ cropsci2007.09.0518
-            </div>
-          </div>
-        </div>  
-      </div>
-	</div>
 
 
-      
-     
 
 
-        
+
       </div>
   </div>
 
 
-  
-</main>
+
+  </main>
 
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.sticky/1.0.4/jquery.sticky.min.js"></script>
-    <script src="js/main.js"></script>
+  <script src="./js/main.js"></script>
 
   </div>
 </body>
 
 </html>
-
