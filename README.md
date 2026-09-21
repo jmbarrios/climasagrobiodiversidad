@@ -42,3 +42,44 @@ pip3 install -r requirements.txt
 Se modificó el script principal para que los datos no tardaran en cargarse y además se mostraran todos los ejemplares de un taxón (ver https://github.com/CONABIO/climasagrobiodiversidad/issues/1). 
 
 Dado que se crea un csv plano para obtener la información, el csv se genera diario a las 23:45 horas. El script que se ejecuta se puede consultar en el servidor con el comando `crontab -l` para obtener la ubicación del mismo. 
+
+# Despliegue
+
+El sitio se sirve como una arquitectura híbrida detrás de un reverse proxy de Nginx:
+
+- `frontend/`: páginas estáticas (HTML/CSS/JS), servidas por Nginx en la raíz (`/`).
+- `dashboard/`: aplicación Dash gestionada con `uv`, servida con Gunicorn bajo `/dashboard/`.
+- `nginx/`: configuración del proxy inverso (`nginx.conf`) y su `Dockerfile`.
+
+## Desarrollo local sin contenedores
+
+```bash
+cd dashboard
+uv sync
+uv run python app.py
+```
+
+La app queda disponible en `http://127.0.0.1:8050/dashboard/` (el prefijo se controla con la variable `DASHBOARD_PATHNAME_PREFIX`, y el host/puerto con `HOST`/`PORT`).
+
+Para regenerar manualmente el catálogo del frontend:
+
+```bash
+python utils/generate_cultivos_manifest.py
+```
+
+## Stack completo con contenedores
+
+En desarrollo local se usa `podman` (con `podman compose`); en producción se usa `docker compose`. Ambos casos comparten el mismo `docker-compose.yml`.
+
+```bash
+cp .env.example .env   # ajustar HTTP_PORT si es necesario
+
+# Desarrollo local (podman)
+podman compose up --build
+
+# Producción (docker)
+docker compose up --build -d
+```
+
+El servicio `nginx` expone `HTTP_PORT` (por defecto `80`) hacia el host; el servicio `dash_app` (Gunicorn) sólo es accesible dentro de la red interna. El manifiesto `frontend/data/cultivos.json` se regenera automáticamente en cada build de la imagen de `nginx`.
+

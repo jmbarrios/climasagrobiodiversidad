@@ -1,0 +1,29 @@
+services:
+  dash_app:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    # Fallback resolvers: some rootless-Podman networks (aardvark-dns) intermittently
+    # fail to forward external DNS queries; app.py also retries on startup.
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    networks:
+      - internal
+
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - dash_app
+    ports:
+      - "${HTTP_PORT:-8000}:80"
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge

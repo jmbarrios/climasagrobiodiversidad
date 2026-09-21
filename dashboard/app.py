@@ -20,9 +20,13 @@ from flask import send_from_directory
 from flask import Flask, request
 import dash_bootstrap_components as dbc
 import warnings
+import os
 warnings.filterwarnings('ignore')
 
 server = Flask(__name__)
+
+# Path prefix under which Nginx proxies this app; override for local root-path testing.
+DASHBOARD_PATHNAME_PREFIX = os.environ.get('DASHBOARD_PATHNAME_PREFIX', '/dashboard/')
 
 #Query para obtener cada uno de los distintos taxones
 my_query= """{
@@ -37,12 +41,21 @@ my_query= """{
 url="https://maices-siagro.conabio.gob.mx/graphql"
 statusCode = 200
 
-def run_query(uri, query, statusCode):
-    request = requests.post(uri, json={'query': query}, verify=False)
-    if request.status_code == statusCode:
-        return request.json()
-    else:
-        raise Exception(f"Unexpected status code returned: {request.status_code}")
+def run_query(uri, query, statusCode, retries=5, backoff_seconds=2):
+    # Retries absorb transient DNS/network hiccups seen at container startup (e.g. aardvark-dns).
+    last_error = None
+    for attempt in range(1, retries + 1):
+        try:
+            request = requests.post(uri, json={'query': query}, verify=False, timeout=(5, 30))
+        except requests.exceptions.RequestException as exc:
+            last_error = exc
+        else:
+            if request.status_code == statusCode:
+                return request.json()
+            last_error = Exception(f"Unexpected status code returned: {request.status_code}")
+        if attempt < retries:
+            time.sleep(backoff_seconds * attempt)
+    raise last_error
 
 
 result = run_query(url, my_query, statusCode)
@@ -133,9 +146,15 @@ def make_layout ():
     children=html.Div(id='loading-output-2',style={'background-color':'#2A3C24','padding':'30px', 'color': 'rgb(42, 60, 36)'}), 
     fullscreen= True)
     
-],style={'background-image':'url("/assets/images/focales.jpg")','width':'102%','height':'100%','background-attachment': 'fixed','margin-top':'5px','margin-left':'-10px','margin-bottom':'-10px', 'padding-top':'50px'})
+],style={'background-image':f'url("{app.get_asset_url("images/focales.jpg")}")','width':'102%','height':'100%','background-attachment': 'fixed','margin-top':'5px','margin-left':'-10px','margin-bottom':'-10px', 'padding-top':'50px'})
 
-app = Dash(server=server,external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = Dash(
+    server=server,
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    requests_pathname_prefix=DASHBOARD_PATHNAME_PREFIX,
+)
+# WSGI entrypoint used by Gunicorn (`gunicorn app:server`).
+server = app.server
 app.title = 'Mapa SIAgro' 
 app.layout = make_layout
 
@@ -529,4 +548,4 @@ def update_map(column_chosen, condition_chosen, pathname):
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host=os.environ.get('HOST', '127.0.0.1'), port=int(os.environ.get('PORT', 8050)), debug=bool(os.environ.get('DASH_DEBUG')))
