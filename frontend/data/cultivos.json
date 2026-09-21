@@ -1,0 +1,276 @@
+{
+  "maices": [
+    {
+      "name": "Ancho",
+      "id": "79239ANGIO",
+      "image": "maices/images/Ancho_79239ANGIO.jpg"
+    },
+    {
+      "name": "Apachito",
+      "id": "79240ANGIO",
+      "image": "maices/images/Apachito_79240ANGIO.jpg"
+    },
+    {
+      "name": "Arrocillo Amarillo",
+      "id": "79241ANGIO",
+      "image": "maices/images/ArrocilloAmarillo_79241ANGIO.jpg"
+    },
+    {
+      "name": "Azul",
+      "id": "79242ANGIO",
+      "image": "maices/images/Azul_79242ANGIO.jpg"
+    },
+    {
+      "name": "Blando Sonora",
+      "id": "232603ANGIO",
+      "image": "maices/images/BlandoSonora_232603ANGIO.jpg"
+    },
+    {
+      "name": "Bofo",
+      "id": "79243ANGIO",
+      "image": "maices/images/Bofo_79243ANGIO.jpg"
+    },
+    {
+      "name": "Bolita",
+      "id": "79244ANGIO",
+      "image": "maices/images/Bolita_79244ANGIO.jpg"
+    },
+    {
+      "name": "C Serrano de Jalisco",
+      "id": "79248ANGIO",
+      "image": "maices/images/CSerranoDeJalisco_79248ANGIO.jpg"
+    },
+    {
+      "name": "Cacahuacintle",
+      "id": "79245ANGIO",
+      "image": "maices/images/Cacahuacintle_79245ANGIO.jpg"
+    },
+    {
+      "name": "Celaya",
+      "id": "79246ANGIO",
+      "image": "maices/images/Celaya_79246ANGIO.jpg"
+    },
+    {
+      "name": "Chalqueño",
+      "id": "79254ANGIO",
+      "image": "maices/images/Chalqueño_79254ANGIO.jpg"
+    },
+    {
+      "name": "Chapalote",
+      "id": "79255ANGIO",
+      "image": "maices/images/Chapalote_79255ANGIO.jpg"
+    },
+    {
+      "name": "Comiteco",
+      "id": "79247ANGIO",
+      "image": "maices/images/Comiteco_79247ANGIO.jpg"
+    },
+    {
+      "name": "Conejo",
+      "id": "79249ANGIO",
+      "image": "maices/images/Conejo_79249ANGIO.jpg"
+    },
+    {
+      "name": "Coscomatepec",
+      "id": "79252ANGIO",
+      "image": "maices/images/Coscomatepec_79252ANGIO.jpg"
+    },
+    {
+      "name": "Cristalino de Chihuahua",
+      "id": "79253ANGIO",
+      "image": "maices/images/CristalinoDeChihuahua_79253ANGIO.jpg"
+    },
+    {
+      "name": "Cónico Norteño",
+      "id": "79251ANGIO",
+      "image": "maices/images/CónicoNorteño_79251ANGIO.jpg"
+    },
+    {
+      "name": "Cónico",
+      "id": "79250ANGIO",
+      "image": "maices/images/Cónico_79250ANGIO.jpg"
+    },
+    {
+      "name": "Dulce",
+      "id": "79261ANGIO",
+      "image": "maices/images/Dulce_79261ANGIO.jpg"
+    },
+    {
+      "name": "Dulcillo de Noroeste",
+      "id": "79275ANGIO",
+      "image": "maices/images/DulcilloDeNoroeste_79275ANGIO.jpg"
+    },
+    {
+      "name": "Dzit- Bacal",
+      "id": "79276ANGIO",
+      "image": "maices/images/Dzit-Bacal_79276ANGIO.jpg"
+    },
+    {
+      "name": "Elotero de Sinaloa",
+      "id": "79277ANGIO",
+      "image": "maices/images/EloteroDeSinaloa_79277ANGIO.jpg"
+    },
+    {
+      "name": "Elotes Cónicos",
+      "id": "79257ANGIO",
+      "image": "maices/images/ElotesCónicos_79257ANGIO.jpg"
+    },
+    {
+      "name": "Elotes Occidentales",
+      "id": "79256ANGIO",
+      "image": "maices/images/ElotesOccidentales_79256ANGIO.jpg"
+    },
+    {
+      "name": "Gordo",
+      "id": "79258ANGIO",
+      "image": "maices/images/Gordo_79258ANGIO.jpg"
+    },
+    {
+      "name": "Harinoso de Ocho",
+      "id": "79259ANGIO",
+      "image": "maices/images/HarinosoDeOcho_79259ANGIO.jpg"
+    },
+    {
+      "name": "Jala",
+      "id": "79260ANGIO",
+      "image": "maices/images/Jala_79260ANGIO.jpg"
+    },
+    {
+      "name": "Mushito",
+      "id": "79262ANGIO",
+      "image": "maices/images/Mushito_79262ANGIO.jpg"
+    },
+    {
+      "name": "Nal-tel de Altura",
+      "id": "79263ANGIO",
+      "image": "maices/images/Nal-telDeAltura_79263ANGIO.jpg"
+    },
+    {
+      "name": "Nal-tel",
+      "id": "79264ANGIO",
+      "image": "maices/images/Nal-tel_79264ANGIO.jpg"
+    },
+    {
+      "name": "Olotillo",
+      "id": "79265ANGIO",
+      "image": "maices/images/Olotillo_79265ANGIO.jpg"
+    },
+    {
+      "name": "Oloton",
+      "id": "79266ANGIO",
+      "image": "maices/images/Oloton_79266ANGIO.jpg"
+    },
+    {
+      "name": "Onaveño",
+      "id": "79267ANGIO",
+      "image": "maices/images/Onaveño_79267ANGIO.jpg"
+    },
+    {
+      "name": "Palomero de Chihuahua",
+      "id": "79268ANGIO",
+      "image": "maices/images/PalomeroDeChihuahua_79268ANGIO.jpg"
+    },
+    {
+      "name": "Palomero Toluqueño",
+      "id": "79269ANGIO",
+      "image": "maices/images/PalomeroToluqueño_79269ANGIO.jpg"
+    },
+    {
+      "name": "Pepitilla",
+      "id": "79270ANGIO",
+      "image": "maices/images/Pepitilla_79270ANGIO.jpg"
+    },
+    {
+      "name": "Ratón",
+      "id": "79271ANGIO",
+      "image": "maices/images/Ratón_79271ANGIO.jpg"
+    },
+    {
+      "name": "Reventador",
+      "id": "79272ANGIO",
+      "image": "maices/images/Reventador_79272ANGIO.jpg"
+    },
+    {
+      "name": "Serrano Mixe",
+      "id": "79286ANGIO",
+      "image": "maices/images/SerranoMixe_79286ANGIO.jpg"
+    },
+    {
+      "name": "Tablilla de Ocho",
+      "id": "79273ANGIO",
+      "image": "maices/images/TablillaDeOcho_79273ANGIO.jpg"
+    },
+    {
+      "name": "Tabloncillo Perla",
+      "id": "79278ANGIO",
+      "image": "maices/images/TabloncilloPerla_79278ANGIO.jpg"
+    },
+    {
+      "name": "Tabloncillo",
+      "id": "79274ANGIO",
+      "image": "maices/images/Tabloncillo_79274ANGIO.jpg"
+    },
+    {
+      "name": "Tehua",
+      "id": "79279ANGIO",
+      "image": "maices/images/Tehua_79279ANGIO.jpg"
+    },
+    {
+      "name": "Tepecintle",
+      "id": "79280ANGIO",
+      "image": "maices/images/Tepecintle_79280ANGIO.jpg"
+    },
+    {
+      "name": "Tuxpeño Norteño",
+      "id": "79281ANGIO",
+      "image": "maices/images/TuxpeñoNorteño_79281ANGIO.jpg"
+    },
+    {
+      "name": "Tuxpeño",
+      "id": "79238ANGIO",
+      "image": "maices/images/Tuxpeño_79238ANGIO.jpg"
+    },
+    {
+      "name": "Vandeño",
+      "id": "79282ANGIO",
+      "image": "maices/images/Vandeño_79282ANGIO.jpg"
+    },
+    {
+      "name": "Zamorano Amarillo",
+      "id": "79283ANGIO",
+      "image": "maices/images/ZamoranoAmarillo_79283ANGIO.jpg"
+    },
+    {
+      "name": "Zapalote Chico",
+      "id": "79284ANGIO",
+      "image": "maices/images/ZapaloteChico_79284ANGIO.jpg"
+    },
+    {
+      "name": "Zapalote Grande",
+      "id": "79285ANGIO",
+      "image": "maices/images/ZapaloteGrande_79285ANGIO.jpg"
+    }
+  ],
+  "teocintles": [
+    {
+      "name": "Teocintle Mexicana raza Chalco",
+      "id": "79290ANGIO",
+      "image": "maices/teocintles/TeocintleMexicanaRazaChalco_79290ANGIO.jpg"
+    },
+    {
+      "name": "Teocintle Mexicana raza Mesa Central",
+      "id": "79287ANGIO",
+      "image": "maices/teocintles/TeocintleMexicanaRazaMesaCentral_79287ANGIO.jpg"
+    },
+    {
+      "name": "Teocintle Mexicana raza Nobogame",
+      "id": "79288ANGIO",
+      "image": "maices/teocintles/TeocintleMexicanaRazaNobogame_79288ANGIO.jpg"
+    },
+    {
+      "name": "Teocintle Parviglumis raza Balsas",
+      "id": "79291ANGIO",
+      "image": "maices/teocintles/TeocintleParviglumisRazaBalsas_79291ANGIO.jpg"
+    }
+  ]
+}
