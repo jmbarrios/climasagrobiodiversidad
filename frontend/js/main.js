@@ -5,7 +5,7 @@ $(function() {
 		card.className = 'border imagenesMaices col-lg-2 col-md-4 col-sm-6 col-6';
 
 		const link = document.createElement('a');
-		link.href = `https://app-siagro.conabio.gob.mx/id=${encodeURIComponent(cultivo.id)}`;
+		link.href = `./dashboard/id=${encodeURIComponent(cultivo.id)}`;
 		link.target = '_blank';
 		link.rel = 'noopener noreferrer';
 

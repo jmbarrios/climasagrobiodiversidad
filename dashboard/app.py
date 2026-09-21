@@ -25,8 +25,9 @@ warnings.filterwarnings('ignore')
 
 server = Flask(__name__)
 
-# Path prefix under which Nginx proxies this app; override for local root-path testing.
 DASHBOARD_PATHNAME_PREFIX = os.environ.get('DASHBOARD_PATHNAME_PREFIX', '/dashboard/')
+
+STATIC_SITE_BASE_URL = os.environ.get('STATIC_SITE_BASE_URL', 'https://app-siagro.conabio.gob.mx/maices')
 
 #Query para obtener cada uno de los distintos taxones
 my_query= """{
@@ -89,6 +90,131 @@ df_taxons = df_taxons.drop(df_taxons['taxon simple'].loc[df_taxons['taxon simple
 df_taxons = df_taxons.drop(df_taxons['taxon simple'].loc[df_taxons['taxon simple']=='teocintle subespecie parviglumis'].index)
 df_taxons = df_taxons.reset_index(drop=True)
 
+# Número de tablas de localidad a mostrar por taxón (por defecto 10, ver TAXON_TABLE_LIMITS.get abajo).
+TAXON_TABLE_LIMITS = {
+    '79259ANGIO': 2,
+    '79268ANGIO': 6,
+}
+
+
+def categorize_altitud(x):
+    if x < 1200:
+        return 'bajas'
+    elif x < 1800:
+        return 'mediana altitud'
+    return 'altas'
+
+
+def categorize_temperatura(x):
+    if x < 18:
+        return 'fría'
+    elif x <= 21:
+        return 'templada'
+    elif x <= 25:
+        return 'semi-caliente'
+    elif x <= 27:
+        return 'caliente'
+    return 'muy caliente'
+
+
+def categorize_precipitacion(x):
+    if x < 450:
+        return 'escasas'
+    elif x <= 650:
+        return 'poco abundantes'
+    elif x <= 850:
+        return 'intermedias'
+    elif x <= 1360:
+        return 'abundantes'
+    return 'muy abundantes'
+
+
+def resolve_taxon_id(value, pathname, df_taxons_local, pathname_prefix):
+    if value is not None:
+        return df_taxons_local.loc[df_taxons_local['taxon simple'] == value, 'taxon_id'].values[0]
+    taxon_id = pathname.replace(f"{pathname_prefix}id=", "")
+    print(f"Resolved taxon_id from pathname: {taxon_id}")
+    # taxon_id = taxon_id.replace("/id=", "")
+    # taxon_id = taxon_id.replace("id=", "")
+    return taxon_id
+
+
+def compute_condition_stats(series, categorize_fn):
+    """Devuelve (categoria_media, mínimo, máximo); '(no disponible)' si la serie está vacía."""
+    if series.isnull().sum() == len(series):
+        return '(no disponible)', '(no disponible)', '(no disponible)'
+    return categorize_fn(series.mean()), round(series.min()), round(series.max())
+
+
+def compute_promedio(df, column):
+    valid = df[df[column] != 'no disponible'].copy()
+    valid[column] = pd.to_numeric(valid[column], errors='coerce')
+    if len(valid) != 0:
+        return round(valid[column].mean())
+    return '(no disponible)'
+
+
+def build_colores_text(color_grano_series):
+    colores = []
+    for raw in color_grano_series:
+        cleaned = raw.replace("['", "").replace("']", "").replace("', '", ",")
+        colores.extend(cleaned.split(","))
+
+    colores_maices = 'los colores: '
+    for color in set(colores):
+        if color == 'no disponible' or len(color) < 4:
+            continue
+        colores_maices = colores_maices + color + ', '
+    colores_maices = colores_maices[:-2]
+    return colores_maices, len(colores_maices) != 11
+
+
+def build_mazorca_texto(colores_maices, has_colores, promedio_hileras, promedio_longitud):
+    hileras_disponible = promedio_hileras != '(no disponible)'
+    longitud_disponible = promedio_longitud != '(no disponible)'
+
+    if not has_colores and not hileras_disponible and not longitud_disponible:
+        return ''
+    if not has_colores and hileras_disponible and longitud_disponible:
+        return f'En esta raza se han encontrado mazorcas que en promedio tienen {promedio_hileras} hileras por mazorca y una longitud de {promedio_longitud} cm.'
+    if has_colores and hileras_disponible and longitud_disponible:
+        return f'En esta raza se han encontrado {colores_maices}; en mazorcas que en promedio tienen {promedio_hileras} hileras por mazorca y una longitud de {promedio_longitud} cm.'
+    if has_colores and not hileras_disponible and longitud_disponible:
+        return f'En esta raza se han encontrado {colores_maices} y una longitud de {promedio_longitud} cm.'
+    if has_colores and not hileras_disponible and not longitud_disponible:
+        return f'En esta raza se han encontrado {colores_maices}.'
+    return ''
+
+
+def build_summary_texto(value, escala_altitud, min_altitud, max_altitud,
+                         escala_temperatura, min_temperatura, max_temperatura,
+                         escala_precipitacion, min_precipitacion, max_precipitacion):
+    verbo = 'crece' if 'teocintle' in value else 'se cultiva'
+    verbo_cap = 'Crece' if 'teocintle' in value else 'Se cultiva'
+    return f'''El {value} {verbo} en general en tierras {escala_altitud} desde {min_altitud:,} hasta {max_altitud:,} metros sobre el nivel del mar (msnm). 
+            {verbo_cap} en lugares donde durante la época de temporal la temperatura es {escala_temperatura}, con temperaturas que van desde {min_temperatura} °C hasta {max_temperatura} 
+            ºC y donde las lluvias son {escala_precipitacion}, con cantidades que van desde {min_precipitacion} mm hasta {max_precipitacion} mm.'''
+
+
+def build_locality_row(df, i):
+    encabezado = df['estado'][i] + ", " + df['municipio'][i] + ", " + df['localidad'][i].upper()
+    fila = pd.DataFrame({
+        "Condición": ["Altitud", "Temperatura", "Precipitación"],
+        "Medida": [[df['altitud'][i], " msnm"], [df['temperatura'][i], " °C"], [df['precipitacion'][i], " mm"]],
+        "Categoría": [df['cat_altitud'][i], df['cat_temperatura'][i], df['cat_precipitacion'][i]],
+    })
+    return encabezado, fila
+
+
+def build_localidad_components(lista, encabezados, taxon_id):
+    limite = min(TAXON_TABLE_LIMITS.get(taxon_id, 10), len(lista))
+    children = []
+    for i in range(limite):
+        children.append(dcc.Markdown(f'''**{encabezados[i]}**'''))
+        children.append(dbc.Table.from_dataframe(lista[i], striped=True, bordered=True, hover=True, style={'background-color':'white'}))
+    return tuple(children)
+
+
 def make_layout ():
     host = flask.request.host_url if flask.has_request_context() else ''
     return html.Div([
@@ -96,10 +222,10 @@ def make_layout ():
         dbc.NavbarSimple(
             
             children=[
-                dbc.NavItem(dbc.NavLink("Home", href="https://app-siagro.conabio.gob.mx/maices/", style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px'})),
-                dbc.NavItem(dbc.NavLink("Mapa", href="/", active=True, style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px',})),
-                dbc.NavItem(dbc.NavLink("Ayuda", href="https://app-siagro.conabio.gob.mx/maices#ayuda/", style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px'})),
-                dbc.NavItem(dbc.NavLink("Créditos", href="https://app-siagro.conabio.gob.mx/maices#creditos/", style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px'})),
+                dbc.NavItem(dbc.NavLink("Home", href=f"{STATIC_SITE_BASE_URL}/", style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px'})),
+                dbc.NavItem(dbc.NavLink("Mapa", href=f"{DASHBOARD_PATHNAME_PREFIX}", active=True, style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px',})),
+                dbc.NavItem(dbc.NavLink("Ayuda", href=f"{STATIC_SITE_BASE_URL}/#ayuda/", style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px'})),
+                dbc.NavItem(dbc.NavLink("Créditos", href=f"{STATIC_SITE_BASE_URL}/#creditos/", style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px'})),
                 
             ],
             color="dark",
@@ -151,6 +277,7 @@ def make_layout ():
 app = Dash(
     server=server,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
+    routes_pathname_prefix=DASHBOARD_PATHNAME_PREFIX,
     requests_pathname_prefix=DASHBOARD_PATHNAME_PREFIX,
 )
 # WSGI entrypoint used by Gunicorn (`gunicorn app:server`).
@@ -175,247 +302,66 @@ def update_url_on_dropdown_change(dropdown_value,pathname):
 @app.callback(Output('intermediate-value', 'data'),Output("divButton", "style"),Output("divDown", "style"),Output('pandas-dropdown-2', 'value'),Output("loading-output-1", "children"),Output("pandas-output-container-2","children"), [Input("btn_csv", "n_clicks"),Input("btn_csv_down", "n_clicks"),Input("pandas-dropdown-2", "value"),Input('url', 'pathname')],prevent_initial_call=True,)
 #Función para el texto y la tabla 
 def update_output(n_clicks,n_clicks2,value,pathname):
-    if (value is not None) or (value is None and pathname!=""):
-        if pathname=='/':
-            taxon_id=df_taxons.loc[df_taxons['taxon simple']== value, 'taxon_id'].values[0]
-            taxon_id=taxon_id.replace("/id=","")
-        else:
-            taxon_id=pathname.replace("/id=","")
-        
-        taxon_id=taxon_id.replace("/id=","")
-        taxon_id=taxon_id.replace("id=","")
+    visible_style = {'background-color':'#2A3C24','padding':'30px','padding-top':'0px', 'color': 'white','display': 'block'}
+
+    if (value is not None) or (value is None and pathname.startswith(f"{DASHBOARD_PATHNAME_PREFIX}id=")):
+        print(f"Dropdown value: {value}, Pathname: {pathname}")
+        taxon_id = resolve_taxon_id(value, pathname, df_taxons, DASHBOARD_PATHNAME_PREFIX)
+
         df_taxon=complete_csv.loc[complete_csv['taxon_id'] == taxon_id]
-        # print("taxon_id: ",taxon_id)
-        # print("df_Taxon: ",df_taxon)
+        if df_taxon.empty:
+            print(f"No data found for taxon_id: {taxon_id}")
         df=df_taxon.filter(items=['taxon','altitud','estado','municipio','localidad','precipitacion','temperatura','color_grano','hileras_mazorca','longitud_promedio'])
         df=df.reset_index()
-        # print(df)
         value = df['taxon'][0]
 
-        value = value.replace("Zea mays subsp. mays", "maíz")
-        value = value.replace("Zea mays subsp. mexicana", "teocintle subespecie mexicana")
-        value = value.replace("Zea mays subsp. parviglumis", "teocintle subespecie parviglumis")
-        
-        mean_altitud = df['altitud'].mean() 
-        def altitud (x):
-            if x < 1200:
-                escala_altitud = 'bajas'
-            elif 1200 <= x < 1800:
-                escala_altitud = 'mediana altitud'
-            else:
-                escala_altitud = 'altas'
-            return escala_altitud
-        df['cat_altitud']= df['altitud'].apply(altitud)
+        value = change_taxon(value)
+        # value = value.replace("Zea mays subsp. mays", "maíz")
+        # value = value.replace("Zea mays subsp. mexicana", "teocintle subespecie mexicana")
+        # value = value.replace("Zea mays subsp. parviglumis", "teocintle subespecie parviglumis")
 
-        escala_altitud = altitud(mean_altitud)
-
+        df['cat_altitud'] = df['altitud'].apply(categorize_altitud)
+        escala_altitud = categorize_altitud(df['altitud'].mean())
         min_altitud = df['altitud'].min()
         max_altitud = df['altitud'].max()
-        
-        mean_temperatura = df['temperatura'].mean() 
-        def temperatura (x):
-            if x < 18:
-                escala_temperatura = 'fría'
-            elif 18 <= x <= 21:
-                escala_temperatura = 'templada'
-            elif 21 < x <= 25:
-                escala_temperatura = 'semi-caliente'
-            elif 25 < x <= 27:
-                escala_temperatura = 'caliente'
-            else:
-                escala_temperatura = 'muy caliente'
-            return escala_temperatura
-        df['cat_temperatura']= df['temperatura'].apply(temperatura)
-        escala_temperatura = temperatura(mean_temperatura)
-        
-        if df['temperatura'].isnull().sum() == len(df['temperatura']): 
-            min_temperatura = '(no disponible)'
-            max_temperatura = '(no disponible)'
-            escala_temperatura= '(no disponible)'
-        else:
-            min_temperatura = round(df['temperatura'].min())
-            max_temperatura = round(df['temperatura'].max())
 
-        mean_precipitacion = df['precipitacion'].mean() 
+        df['cat_temperatura'] = df['temperatura'].apply(categorize_temperatura)
+        escala_temperatura, min_temperatura, max_temperatura = compute_condition_stats(df['temperatura'], categorize_temperatura)
 
-        def precipitacion (x):
-            if x < 450:
-                escala_precipitacion = 'escasas'
-            elif 450 <= x <= 650:
-                escala_precipitacion = 'poco abundantes'
-            elif 650 < x <= 850:
-                escala_precipitacion = 'intermedias'
-            elif 850 < x <= 1360:
-                escala_precipitacion = 'abundantes'
-            else:
-                escala_precipitacion = 'muy abundantes'
-            return escala_precipitacion
-        
-        df['cat_precipitacion']= df['precipitacion'].apply(precipitacion)
+        df['cat_precipitacion'] = df['precipitacion'].apply(categorize_precipitacion)
+        escala_precipitacion, min_precipitacion, max_precipitacion = compute_condition_stats(df['precipitacion'], categorize_precipitacion)
 
-        escala_precipitacion = precipitacion(mean_precipitacion)
-        if df['precipitacion'].isnull().sum() == len(df['precipitacion']): 
-            min_precipitacion = '(no disponible)'
-            max_precipitacion = '(no disponible)'
-            escala_precipitacion= '(no disponible)'
-        else:
-            min_precipitacion = round(df['precipitacion'].min())
-            max_precipitacion = round(df['precipitacion'].max())
+        promedio_hileras = compute_promedio(df, 'hileras_mazorca')
+        promedio_longitud = compute_promedio(df, 'longitud_promedio')
 
-        hileras = df[df.hileras_mazorca != 'no disponible']
+        colores_maices, has_colores = build_colores_text(df['color_grano'])
+        texto = build_mazorca_texto(colores_maices, has_colores, promedio_hileras, promedio_longitud)
 
-        hileras["hileras_mazorca"] = pd.to_numeric(hileras["hileras_mazorca"],errors='coerce')
-        if len(hileras) !=0:
-            promedio_hileras = round(hileras['hileras_mazorca'].mean())
-        else:
-            promedio_hileras = '(no disponible)'
-        
-        #
-        longitud = df[df.longitud_promedio != 'no disponible']
-        longitud["longitud_promedio"] = pd.to_numeric(longitud["longitud_promedio"],errors='coerce')
-        if len(longitud) !=0:
-            promedio_longitud = round(longitud['longitud_promedio'].mean())
-        else:
-            promedio_longitud = '(no disponible)'
+        df = df.round()
 
-        color_maices = df['color_grano']
-
-        colores = []
-        for i in color_maices:
-            
-            i = i.replace("['", "")
-            i = i.replace("']", "")
-            i = i.replace("', '", ",")
-
-            iAux = i.split(",")
-
-            if len (iAux) == 1:
-                colores.append(iAux[0])
-            else:
-                for j in range (len(iAux)):
-                    colores.append(iAux[j])
-
-        mylist = list(set(colores))
-        colores_maices = 'los colores: '
-        for i in range (len (mylist)):
-            color = str(mylist[i])
-            if color == 'no disponible':
-                continue
-            if len(color) <4:
-                continue
-            colores_maices = colores_maices + color + ', '
-        colores_maices =colores_maices[:-2]
-
-        if len(colores_maices) == 11 and promedio_hileras == '(no disponible)' and promedio_longitud == '(no disponible)':
-            texto = ''
-        elif len(colores_maices) == 11 and promedio_hileras != '(no disponible)' and promedio_longitud != '(no disponible)':
-            texto = f'En esta raza se han encontrado mazorcas que en promedio tienen {promedio_hileras} hileras por mazorca y una longitud de {promedio_longitud} cm.'
-        elif len(colores_maices) != 11 and promedio_hileras != '(no disponible)' and promedio_longitud != '(no disponible)':
-            texto = f'En esta raza se han encontrado {colores_maices}; en mazorcas que en promedio tienen {promedio_hileras} hileras por mazorca y una longitud de {promedio_longitud} cm.'
-        elif len(colores_maices) != 11 and promedio_hileras == '(no disponible)' and promedio_longitud != '(no disponible)':  
-            texto = f'En esta raza se han encontrado {colores_maices} y una longitud de {promedio_longitud} cm.'
-        elif len(colores_maices) != 11 and promedio_hileras == '(no disponible)' and promedio_longitud == '(no disponible)':  
-            texto = f'En esta raza se han encontrado {colores_maices}.'
-
-        df= df.round() 
-
-        lista=[]
-        encabezados=[]
-
-        rangei=10
-
-        if len(df)<10:
-            rangei=len(df)
-
-        for i in range(0,rangei):
-            encabezado=df['estado'][i] + ", " + df['municipio'][i] + ", " + df['localidad'][i].upper()
-            aux = pd.DataFrame(
-                {
-                    "Condición": ["Altitud", "Temperatura", "Precipitación"],
-                    "Medida": [[df['altitud'][i], " msnm"], [df['temperatura'][i], " °C"] , [df['precipitacion'][i], " mm"] ],
-                    "Categoría": [df['cat_altitud'][i], df['cat_temperatura'][i], df['cat_precipitacion'][i]],
-                }
-            )
-
-            lista.append(aux)
+        rangei = min(len(df), 10)
+        lista, encabezados = [], []
+        for i in range(rangei):
+            encabezado, fila = build_locality_row(df, i)
+            lista.append(fila)
             encabezados.append(encabezado)
-        
-        if "teocintle" in value:
-            texto_se_cultiva=f'''El {value} crece en general en tierras {escala_altitud} desde {min_altitud:,} hasta {max_altitud:,} metros sobre el nivel del mar (msnm). 
-            Crece en lugares donde durante la época de temporal la temperatura es {escala_temperatura}, con temperaturas que van desde {min_temperatura} °C hasta {max_temperatura} 
-            ºC y donde las lluvias son {escala_precipitacion}, con cantidades que van desde {min_precipitacion} mm hasta {max_precipitacion} mm.'''
 
-        else:
-            texto_se_cultiva=f'''El {value} se cultiva en general en tierras {escala_altitud} desde {min_altitud:,} hasta {max_altitud:,} metros sobre el nivel del mar (msnm). 
-            Se cultiva en lugares donde durante la época de temporal la temperatura es {escala_temperatura}, con temperaturas que van desde {min_temperatura} °C hasta {max_temperatura} 
-            ºC y donde las lluvias son {escala_precipitacion}, con cantidades que van desde {min_precipitacion} mm hasta {max_precipitacion} mm.'''
+        texto_se_cultiva = build_summary_texto(
+            value, escala_altitud, min_altitud, max_altitud,
+            escala_temperatura, min_temperatura, max_temperatura,
+            escala_precipitacion, min_precipitacion, max_precipitacion,
+        )
 
-        if taxon_id=='79259ANGIO':
-            return (df.to_json(date_format='iso', orient='split')),{'background-color':'#2A3C24','padding':'30px','padding-top':'0px', 'color': 'white','display': 'block'},{'background-color':'#2A3C24','padding':'30px','padding-top':'0px', 'color': 'white','display': 'block'},value, (dcc.Markdown (f'''{texto_se_cultiva}'''), 
-            dcc.Markdown(
-                f'''{texto}'''
-            )), (dcc.Markdown(
-                f'''**{encabezados[0]}**'''),
-                dbc.Table.from_dataframe(lista[0], striped=True, bordered=True, hover=True, style={'background-color':'white'}),
-                dcc.Markdown(f'''**{encabezados[1]}**'''),
-                dbc.Table.from_dataframe(lista[1], striped=True, bordered=True, hover=True, style={'background-color':'white'})
-                )
-        elif taxon_id=='79268ANGIO':
-            return (df.to_json(date_format='iso', orient='split')),{'background-color':'#2A3C24','padding':'30px','padding-top':'0px', 'color': 'white','display': 'block'},{'background-color':'#2A3C24','padding':'30px','padding-top':'0px', 'color': 'white','display': 'block'},value, (dcc.Markdown (f'''{texto_se_cultiva}'''), 
-            dcc.Markdown(
-                f'''{texto}'''
-            )), (dcc.Markdown(
-                f'''**{encabezados[0]}**'''),
-                dbc.Table.from_dataframe(lista[0], striped=True, bordered=True, hover=True, style={'background-color':'white'}),
-                dcc.Markdown(f'''**{encabezados[1]}**'''),
-                dbc.Table.from_dataframe(lista[1], striped=True, bordered=True, hover=True, style={'background-color':'white'}),
-                dcc.Markdown(
-                f'''**{encabezados[2]}**'''),
-                dbc.Table.from_dataframe(lista[2], striped=True, bordered=True, hover=True, style={'background-color':'white'}),
-                dcc.Markdown(
-                f'''**{encabezados[3]}**'''),
-                dbc.Table.from_dataframe(lista[3], striped=True, bordered=True, hover=True, style={'background-color':'white'}),
-                dcc.Markdown(
-                f'''**{encabezados[4]}**'''),
-                dbc.Table.from_dataframe(lista[4], striped=True, bordered=True, hover=True, style={'background-color':'white'}),
-                dcc.Markdown(
-                f'''**{encabezados[5]}**'''),
-                dbc.Table.from_dataframe(lista[5], striped=True, bordered=True, hover=True, style={'background-color':'white'})
-                )
-        else:
-            return (df.to_json(date_format='iso', orient='split')),{'background-color':'#2A3C24','padding':'30px','padding-top':'0px', 'color': 'white','display': 'block'},{'background-color':'#2A3C24','padding':'30px','padding-top':'0px', 'color': 'white','display': 'block'},value, (dcc.Markdown (f'''{texto_se_cultiva}'''), 
-            dcc.Markdown(
-                f'''{texto}'''
-            )), (dcc.Markdown(
-                f'''**{encabezados[0]}**'''),
-                dbc.Table.from_dataframe(lista[0], striped=True, bordered=True, hover=True, style={'background-color':'white'}),
-                dcc.Markdown(f'''**{encabezados[1]}**'''),
-                dbc.Table.from_dataframe(lista[1], striped=True, bordered=True, hover=True, style={'background-color':'white'}),
-                dcc.Markdown(
-                f'''**{encabezados[2]}**'''),
-                dbc.Table.from_dataframe(lista[2], striped=True, bordered=True, hover=True, style={'background-color':'white'}),
-                dcc.Markdown(
-                f'''**{encabezados[3]}**'''),
-                dbc.Table.from_dataframe(lista[3], striped=True, bordered=True, hover=True, style={'background-color':'white'}),
-                dcc.Markdown(
-                f'''**{encabezados[4]}**'''),
-                dbc.Table.from_dataframe(lista[4], striped=True, bordered=True, hover=True, style={'background-color':'white'}),
-                dcc.Markdown(
-                f'''**{encabezados[5]}**'''),
-                dbc.Table.from_dataframe(lista[5], striped=True, bordered=True, hover=True, style={'background-color':'white'}),
-                dcc.Markdown(
-                f'''**{encabezados[6]}**'''),
-                dbc.Table.from_dataframe(lista[6], striped=True, bordered=True, hover=True, style={'background-color':'white'}),
-                dcc.Markdown(
-                f'''**{encabezados[7]}**'''),
-                dbc.Table.from_dataframe(lista[7], striped=True, bordered=True, hover=True, style={'background-color':'white'}),
-                dcc.Markdown(
-                f'''**{encabezados[8]}**'''),
-                dbc.Table.from_dataframe(lista[8], striped=True, bordered=True, hover=True, style={'background-color':'white'}),
-                dcc.Markdown(
-                f'''**{encabezados[9]}**'''),
-                dbc.Table.from_dataframe(lista[9], striped=True, bordered=True, hover=True, style={'background-color':'white'})
-                )
+        localidad_components = build_localidad_components(lista, encabezados, taxon_id)
+
+        return (
+            df.to_json(date_format='iso', orient='split'),
+            visible_style,
+            visible_style,
+            value,
+            (dcc.Markdown(f'''{texto_se_cultiva}'''), dcc.Markdown(f'''{texto}''')),
+            localidad_components,
+        )
     else:
         texto="Selecciona una raza en el menú desplegable al inicio de la página"
         texto2=""
@@ -468,8 +414,9 @@ def update_map(column_chosen, condition_chosen, pathname):
     fondo = base64.b64encode(open(image, 'rb').read())
 
     if column_chosen is None:
+        print(f"Dropdown value: {column_chosen}, Pathname: {pathname}")
         #print("entro a is none")
-        complete_dict={"lat": "0","lon": "0"}
+        # complete_dict={"lat": "0","lon": "0"}
         # fig1 = px.scatter_map(lat=['21.826080'],lon=['-101.460875'],zoom=4, height=500,color_discrete_sequence=['black'])
         fig1 = px.scatter_map(center={'lat': 21.826080, 'lon': -101.460875},zoom=3, height=500,color_discrete_sequence=['black'], map_style="carto-darkmatter")
         
@@ -497,17 +444,12 @@ def update_map(column_chosen, condition_chosen, pathname):
         return fig1, fig2, pathname
 
     if column_chosen is not None:
-
-        #if taxon url tiene algo entonces taxon id tiene ese valor y si no es el column chosen
-        if pathname=='/':
-            taxon_id=df_taxons.loc[df_taxons['taxon simple']== column_chosen, 'taxon_id'].values[0]
-            taxon_id=taxon_id.replace("/id=","")
-        else:
-            taxon_id=pathname.replace("/id=","")
+        print(f"Column value: {column_chosen}, Pathname: {pathname}")
+        
+        taxon_id=df_taxons.loc[df_taxons['taxon simple']== column_chosen, 'taxon_id'].values[0]
         
         complete_csv = pd.read_csv('./assets/data/occurrence.csv')
-        taxon_id=taxon_id.replace("/id=","")
-        taxon_id=taxon_id.replace("id=","")
+        
         df_taxon=complete_csv.loc[complete_csv['taxon_id'] == taxon_id]
         df=df_taxon.filter(items=['taxon','latitud', 'longitud', 'altitud', 'estado', 'municipio', 'localidad', 'temperatura', 'precipitacion'])
         df['temperatura']= df['temperatura'].round()
