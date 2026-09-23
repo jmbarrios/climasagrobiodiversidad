@@ -97,7 +97,11 @@ cp .env.example .env
 | Variable | Descripción | Valor por defecto |
 | :--- | :--- | :--- |
 | `HTTP_PORT` | Puerto en el host donde escuchará Nginx | `8000` |
-| `STATIC_SITE_BASE_URL` | URL base del sitio estático para enlaces cruzados | `http://localhost:8000` |
+| `APP_SUBPATH` | Prefijo de subruta para despliegues detrás de proxy (ej. `/app1`). Vacío para subdominios directos | *(vacío)* |
+| `STATIC_SITE_BASE_URL` | URL o subruta base del sitio estático para enlaces de navegación | `${APP_SUBPATH}` o `http://localhost:8000` |
+| `DASHBOARD_ROUTES_PATHNAME_PREFIX` | Prefijo interno de rutas en Flask/Dash | `/dashboard/` |
+| `DASHBOARD_REQUESTS_PATHNAME_PREFIX` | Prefijo público que el navegador solicita para Dash | `${APP_SUBPATH}/dashboard/` |
+
 
 ### 2. Desarrollo Local (Podman)
 
@@ -138,9 +142,44 @@ Una vez levantado el stack:
 > [!NOTE]
 > El contenedor `dash_app` no expone puertos directamente al host; la comunicación se realiza de forma segura a través de la red interna `internal` y es enrutada por `nginx`.
 
+### 5. Despliegue en Subruta (ej. `products.example.com/app1/`)
+
+Si despliegas la aplicación bajo una subruta en un servidor Nginx externo (sin control de DNS dedicado):
+
+1. **Configura en tu archivo `.env`:**
+   ```env
+   HTTP_PORT=8000
+   APP_SUBPATH=/app1
+   ```
+
+2. **Configuración recomendada para tu Nginx externo (servidor host):**
+   ```nginx
+   # Redirigir /app1 a /app1/ para preservar la resolución relativa
+   location = /app1 {
+       return 301 /app1/;
+   }
+
+   # Enrutar la subruta al contenedor eliminando el prefijo /app1/
+   location /app1/ {
+       proxy_pass http://127.0.0.1:8000/;   # ¡La barra diagonal final es indispensable!
+       proxy_set_header Host $host;
+       proxy_set_header X-Real-IP $remote_addr;
+       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       proxy_set_header X-Forwarded-Proto $scheme;
+
+       # Soporte de WebSockets para Dash
+       proxy_http_version 1.1;
+       proxy_set_header Upgrade $http_upgrade;
+       proxy_set_header Connection "upgrade";
+       proxy_connect_timeout 10s;
+       proxy_read_timeout 120s;
+   }
+   ```
+
+
 ---
 
-## 💻 Desarrollo Local sin Contenedores (Dashboard)
+## Desarrollo Local sin Contenedores (Dashboard)
 
 Si deseas trabajar únicamente en la aplicación Dash sin levantar el stack completo de contenedores:
 

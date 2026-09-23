@@ -14,7 +14,10 @@ services:
         aliases:
           - dash_backend
     environment:
-      - STATIC_SITE_BASE_URL=${STATIC_SITE_BASE_URL:-http://localhost:8000}
+      - APP_SUBPATH=${APP_SUBPATH:-}
+      - DASHBOARD_ROUTES_PATHNAME_PREFIX=${DASHBOARD_ROUTES_PATHNAME_PREFIX:-/dashboard/}
+      - DASHBOARD_REQUESTS_PATHNAME_PREFIX=${DASHBOARD_REQUESTS_PATHNAME_PREFIX:-}
+      - STATIC_SITE_BASE_URL=${STATIC_SITE_BASE_URL:-}
 
   nginx:
     build:

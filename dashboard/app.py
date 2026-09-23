@@ -25,9 +25,38 @@ warnings.filterwarnings('ignore')
 
 server = Flask(__name__)
 
-DASHBOARD_PATHNAME_PREFIX = os.environ.get('DASHBOARD_PATHNAME_PREFIX', '/dashboard/')
+APP_SUBPATH = (os.environ.get('APP_SUBPATH') or '').strip('/')
+subpath_prefix = f"/{APP_SUBPATH}" if APP_SUBPATH else ""
 
-STATIC_SITE_BASE_URL = os.environ.get('STATIC_SITE_BASE_URL', 'https://app-siagro.conabio.gob.mx/maices')
+DASHBOARD_ROUTES_PATHNAME_PREFIX = (
+    os.environ.get('DASHBOARD_ROUTES_PATHNAME_PREFIX')
+    or os.environ.get('DASHBOARD_PATHNAME_PREFIX')
+    or '/dashboard/'
+)
+if not DASHBOARD_ROUTES_PATHNAME_PREFIX.startswith('/'):
+    DASHBOARD_ROUTES_PATHNAME_PREFIX = f"/{DASHBOARD_ROUTES_PATHNAME_PREFIX}"
+if not DASHBOARD_ROUTES_PATHNAME_PREFIX.endswith('/'):
+    DASHBOARD_ROUTES_PATHNAME_PREFIX = f"{DASHBOARD_ROUTES_PATHNAME_PREFIX}/"
+
+default_requests_prefix = f"{subpath_prefix}{DASHBOARD_ROUTES_PATHNAME_PREFIX}"
+DASHBOARD_REQUESTS_PATHNAME_PREFIX = (
+    os.environ.get('DASHBOARD_REQUESTS_PATHNAME_PREFIX')
+    or default_requests_prefix
+)
+if not DASHBOARD_REQUESTS_PATHNAME_PREFIX.startswith('/'):
+    DASHBOARD_REQUESTS_PATHNAME_PREFIX = f"/{DASHBOARD_REQUESTS_PATHNAME_PREFIX}"
+if not DASHBOARD_REQUESTS_PATHNAME_PREFIX.endswith('/'):
+    DASHBOARD_REQUESTS_PATHNAME_PREFIX = f"{DASHBOARD_REQUESTS_PATHNAME_PREFIX}/"
+
+# Backward compatibility alias
+DASHBOARD_PATHNAME_PREFIX = DASHBOARD_REQUESTS_PATHNAME_PREFIX
+
+# If APP_SUBPATH is provided, use it as default static site URL unless STATIC_SITE_BASE_URL is explicitly non-default
+configured_static = (os.environ.get('STATIC_SITE_BASE_URL') or '').strip()
+if APP_SUBPATH and (not configured_static or configured_static == 'http://localhost:8000'):
+    STATIC_SITE_BASE_URL = subpath_prefix
+else:
+    STATIC_SITE_BASE_URL = (configured_static or 'https://app-siagro.conabio.gob.mx/maices').rstrip('/')
 
 #Query para obtener cada uno de los distintos taxones
 my_query= """{
@@ -132,10 +161,11 @@ def categorize_precipitacion(x):
 def resolve_taxon_id(value, pathname, df_taxons_local, pathname_prefix):
     if value is not None:
         return df_taxons_local.loc[df_taxons_local['taxon simple'] == value, 'taxon_id'].values[0]
-    taxon_id = pathname.replace(f"{pathname_prefix}id=", "")
+    if pathname and "id=" in pathname:
+        taxon_id = pathname.split("id=", 1)[1]
+    else:
+        taxon_id = pathname.replace(f"{pathname_prefix}id=", "") if pathname else ""
     print(f"Resolved taxon_id from pathname: {taxon_id}")
-    # taxon_id = taxon_id.replace("/id=", "")
-    # taxon_id = taxon_id.replace("id=", "")
     return taxon_id
 
 
@@ -222,10 +252,10 @@ def make_layout ():
         dbc.NavbarSimple(
             
             children=[
-                dbc.NavItem(dbc.NavLink("Home", href=f"{STATIC_SITE_BASE_URL}/", style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px'})),
-                dbc.NavItem(dbc.NavLink("Mapa", href=f"{DASHBOARD_PATHNAME_PREFIX}", active=True, style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px',})),
-                dbc.NavItem(dbc.NavLink("Ayuda", href=f"{STATIC_SITE_BASE_URL}/#ayuda/", style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px'})),
-                dbc.NavItem(dbc.NavLink("Créditos", href=f"{STATIC_SITE_BASE_URL}/#creditos/", style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px'})),
+                dbc.NavItem(dbc.NavLink("Home", href=f"{STATIC_SITE_BASE_URL}/" if STATIC_SITE_BASE_URL else "/", style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px'})),
+                dbc.NavItem(dbc.NavLink("Mapa", href=f"{DASHBOARD_REQUESTS_PATHNAME_PREFIX}", active=True, style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px',})),
+                dbc.NavItem(dbc.NavLink("Ayuda", href=f"{STATIC_SITE_BASE_URL}/#ayuda/" if STATIC_SITE_BASE_URL else "/#ayuda/", style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px'})),
+                dbc.NavItem(dbc.NavLink("Créditos", href=f"{STATIC_SITE_BASE_URL}/#creditos/" if STATIC_SITE_BASE_URL else "/#creditos/", style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px'})),
                 
             ],
             color="dark",
@@ -277,8 +307,8 @@ def make_layout ():
 app = Dash(
     server=server,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
-    routes_pathname_prefix=DASHBOARD_PATHNAME_PREFIX,
-    requests_pathname_prefix=DASHBOARD_PATHNAME_PREFIX,
+    routes_pathname_prefix=DASHBOARD_ROUTES_PATHNAME_PREFIX,
+    requests_pathname_prefix=DASHBOARD_REQUESTS_PATHNAME_PREFIX,
 )
 # WSGI entrypoint used by Gunicorn (`gunicorn app:server`).
 server = app.server
@@ -295,7 +325,7 @@ def update_url_on_dropdown_change(dropdown_value,pathname):
         url_taxon=''
     if dropdown_value is not None:
         taxon_id=df_taxons.loc[df_taxons['taxon simple']== dropdown_value, 'taxon_id'].values[0]
-        url_taxon='id='+taxon_id
+        url_taxon=f"{DASHBOARD_REQUESTS_PATHNAME_PREFIX}id={taxon_id}"
     
     return url_taxon
 
@@ -304,9 +334,9 @@ def update_url_on_dropdown_change(dropdown_value,pathname):
 def update_output(n_clicks,n_clicks2,value,pathname):
     visible_style = {'background-color':'#2A3C24','padding':'30px','padding-top':'0px', 'color': 'white','display': 'block'}
 
-    if (value is not None) or (value is None and pathname.startswith(f"{DASHBOARD_PATHNAME_PREFIX}id=")):
+    if (value is not None) or (value is None and pathname and "id=" in pathname):
         print(f"Dropdown value: {value}, Pathname: {pathname}")
-        taxon_id = resolve_taxon_id(value, pathname, df_taxons, DASHBOARD_PATHNAME_PREFIX)
+        taxon_id = resolve_taxon_id(value, pathname, df_taxons, DASHBOARD_REQUESTS_PATHNAME_PREFIX)
 
         df_taxon=complete_csv.loc[complete_csv['taxon_id'] == taxon_id]
         if df_taxon.empty:
