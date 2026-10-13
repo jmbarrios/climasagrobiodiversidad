@@ -307,8 +307,9 @@ def make_layout ():
 app = Dash(
     server=server,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
-    routes_pathname_prefix=DASHBOARD_ROUTES_PATHNAME_PREFIX,
-    requests_pathname_prefix=DASHBOARD_REQUESTS_PATHNAME_PREFIX,
+    # routes_pathname_prefix=DASHBOARD_ROUTES_PATHNAME_PREFIX,
+    # requests_pathname_prefix=DASHBOARD_REQUESTS_PATHNAME_PREFIX,
+    url_base_pathname=DASHBOARD_ROUTES_PATHNAME_PREFIX
 )
 # WSGI entrypoint used by Gunicorn (`gunicorn app:server`).
 server = app.server
