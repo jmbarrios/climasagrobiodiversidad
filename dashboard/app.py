@@ -253,7 +253,7 @@ def make_layout ():
             
             children=[
                 dbc.NavItem(dbc.NavLink("Home", href=f"{STATIC_SITE_BASE_URL}/" if STATIC_SITE_BASE_URL else "/", external_link=True, style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px'})),
-                dbc.NavItem(dbc.NavLink("Mapa", href=f"{DASHBOARD_REQUESTS_PATHNAME_PREFIX}", active=True, style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px',})),
+                dbc.NavItem(dbc.NavLink("Mapa", href=f"{STATIC_SITE_BASE_URL}{DASHBOARD_ROUTES_PATHNAME_PREFIX}", active=True, style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px',})),
                 dbc.NavItem(dbc.NavLink("Ayuda", href=f"{STATIC_SITE_BASE_URL}/#ayuda" if STATIC_SITE_BASE_URL else "/#ayuda", external_link=True, style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px'})),
                 dbc.NavItem(dbc.NavLink("Créditos", href=f"{STATIC_SITE_BASE_URL}/#creditos" if STATIC_SITE_BASE_URL else "/#creditos", external_link=True, style={'padding-left':'10px','margin-top':'5px','margin-bottom':'5px'})),
                 
