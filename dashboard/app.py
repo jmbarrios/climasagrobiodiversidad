@@ -25,38 +25,22 @@ warnings.filterwarnings('ignore')
 
 server = Flask(__name__)
 
-APP_SUBPATH = (os.environ.get('APP_SUBPATH') or '').strip('/')
-subpath_prefix = f"/{APP_SUBPATH}" if APP_SUBPATH else ""
+def normalize_prefix(value):
+    return f"/{value.strip('/')}/" if value.strip('/') else '/'
 
-DASHBOARD_ROUTES_PATHNAME_PREFIX = (
-    os.environ.get('DASHBOARD_ROUTES_PATHNAME_PREFIX')
-    or os.environ.get('DASHBOARD_PATHNAME_PREFIX')
-    or '/dashboard/'
+
+# Ruta que ve Dash/Flask (la que llega al nginx interno).
+DASHBOARD_ROUTES_PATHNAME_PREFIX = normalize_prefix(
+    os.environ.get('DASHBOARD_ROUTES_PATHNAME_PREFIX') or '/dashboard/'
 )
-if not DASHBOARD_ROUTES_PATHNAME_PREFIX.startswith('/'):
-    DASHBOARD_ROUTES_PATHNAME_PREFIX = f"/{DASHBOARD_ROUTES_PATHNAME_PREFIX}"
-if not DASHBOARD_ROUTES_PATHNAME_PREFIX.endswith('/'):
-    DASHBOARD_ROUTES_PATHNAME_PREFIX = f"{DASHBOARD_ROUTES_PATHNAME_PREFIX}/"
-
-default_requests_prefix = f"{subpath_prefix}{DASHBOARD_ROUTES_PATHNAME_PREFIX}"
-DASHBOARD_REQUESTS_PATHNAME_PREFIX = (
-    os.environ.get('DASHBOARD_REQUESTS_PATHNAME_PREFIX')
-    or default_requests_prefix
+# Ruta que ve el navegador (incluye el prefijo del nginx externo, p. ej. /analytics/dashboard/).
+DASHBOARD_REQUESTS_PATHNAME_PREFIX = normalize_prefix(
+    os.environ.get('DASHBOARD_REQUESTS_PATHNAME_PREFIX') or DASHBOARD_ROUTES_PATHNAME_PREFIX
 )
-if not DASHBOARD_REQUESTS_PATHNAME_PREFIX.startswith('/'):
-    DASHBOARD_REQUESTS_PATHNAME_PREFIX = f"/{DASHBOARD_REQUESTS_PATHNAME_PREFIX}"
-if not DASHBOARD_REQUESTS_PATHNAME_PREFIX.endswith('/'):
-    DASHBOARD_REQUESTS_PATHNAME_PREFIX = f"{DASHBOARD_REQUESTS_PATHNAME_PREFIX}/"
 
-# Backward compatibility alias
-DASHBOARD_PATHNAME_PREFIX = DASHBOARD_REQUESTS_PATHNAME_PREFIX
-
-# If APP_SUBPATH is provided, use it as default static site URL unless STATIC_SITE_BASE_URL is explicitly non-default
-configured_static = (os.environ.get('STATIC_SITE_BASE_URL') or '').strip()
-if APP_SUBPATH and (not configured_static or configured_static == 'http://localhost:8000'):
-    STATIC_SITE_BASE_URL = subpath_prefix
-else:
-    STATIC_SITE_BASE_URL = (configured_static or 'https://app-siagro.conabio.gob.mx/maices').rstrip('/')
+STATIC_SITE_BASE_URL = (
+    os.environ.get('STATIC_SITE_BASE_URL') or 'https://app-siagro.conabio.gob.mx/maices'
+).strip().rstrip('/')
 
 #Query para obtener cada uno de los distintos taxones
 my_query= """{
@@ -307,9 +291,8 @@ def make_layout ():
 app = Dash(
     server=server,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
-    # routes_pathname_prefix=DASHBOARD_ROUTES_PATHNAME_PREFIX,
-    # requests_pathname_prefix=DASHBOARD_REQUESTS_PATHNAME_PREFIX,
-    url_base_pathname=DASHBOARD_ROUTES_PATHNAME_PREFIX
+    routes_pathname_prefix=DASHBOARD_ROUTES_PATHNAME_PREFIX,
+    requests_pathname_prefix=DASHBOARD_REQUESTS_PATHNAME_PREFIX,
 )
 # WSGI entrypoint used by Gunicorn (`gunicorn app:server`).
 server = app.server
